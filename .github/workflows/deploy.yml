@@ -1,0 +1,30 @@
+name: Deploy to AWS EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up SSH
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H 54.165.220.238 >> ~/.ssh/known_hosts
+
+    - name: Deploy Application
+      run: |
+        ssh ubuntu@54.165.220.238 "
+        cd /home/ubuntu/legacy-code-modernizer &&
+        git pull origin main &&
+        npm install &&
+        pm2 start app.js || pm2 restart app.js
+        "
