@@ -1,0 +1,42 @@
+name: CI Workflow
+
+on:
+  push:
+    branches:
+      - main  # Change to your default branch if needed
+      - hackathon
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Install Dependencies
+        run: |
+          if [ -f package.json ]; then
+            npm install
+          elif [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          fi
+
+      - name: Run Tests
+        run: |
+          if [ -f package.json ]; then
+            npm test
+          elif [ -f pytest.ini ] || [ -f requirements.txt ]; then
+            pytest
+          fi
+
+      - name: Build Application
+        run: |
+          if [ -f package.json ]; then
+            npm run build
+          else
+            echo "Build not configured for this project."
+          fi
